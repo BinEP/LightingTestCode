@@ -1,6 +1,8 @@
+#define FASTLED_ESP32_I2S
+
+
 #include <WS2812FX.h>
 
-#define FASTLED_ESP32_I2S
 #include <FastLED.h>
 
 #define NUM_LEDS 10

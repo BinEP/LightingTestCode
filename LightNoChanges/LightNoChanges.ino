@@ -1,5 +1,3 @@
-#define FASTLED_ESP32_I2S
-
 #include <WS2812FX.h>
 
 #define LED_COUNT 30000 
@@ -26,7 +24,7 @@ unsigned long now = 0;
 void setup() {
 
   ws2812fx.addLeds<LED_PIN>(0, 15000);
-  ws2812fx.addLeds<13>(15000, LED_COUNT);
+  ws2812fx.addLeds<13>(15000, 15000);
   ws2812fx.init();
   ws2812fx.setBrightness(255);
 //  ws2812fx.setSpeed(1000);
@@ -35,7 +33,8 @@ void setup() {
 
   
   ws2812fx.setSegment(0, 0, 15, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
-  ws2812fx.setSegment(1, 15, LED_COUNT, FX_MODE_CHASE_BLACKOUT, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(1, 15, 30, FX_MODE_FLASH_SPARKLE, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(2, 30, LED_COUNT, FX_MODE_STATIC, 0xFF0000, 1000, false);
   ws2812fx.start();
 }
 
