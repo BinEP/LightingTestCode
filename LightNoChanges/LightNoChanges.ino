@@ -1,6 +1,6 @@
 #include <WS2812FX.h>
 
-#define LED_COUNT 30000 
+#define LED_COUNT 330 
 #define LED_PIN 12
 
 #define TIMER_MS 5000
@@ -23,8 +23,10 @@ unsigned long now = 0;
 
 void setup() {
 
-  ws2812fx.addLeds<LED_PIN>(0, 15000);
-  ws2812fx.addLeds<13>(15000, 15000);
+  Serial.begin(115200);
+
+  ws2812fx.addLeds<LED_PIN>(0, 30);
+  ws2812fx.addLeds<13>(30, 330);
   ws2812fx.init();
   ws2812fx.setBrightness(255);
 //  ws2812fx.setSpeed(1000);
@@ -34,8 +36,27 @@ void setup() {
   
   ws2812fx.setSegment(0, 0, 15, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
   ws2812fx.setSegment(1, 15, 30, FX_MODE_FLASH_SPARKLE, 0xFF0000, 1000, false);
-  ws2812fx.setSegment(2, 30, LED_COUNT, FX_MODE_STATIC, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(2, 30, LED_COUNT, FX_MODE_WARM_CYCLE, 0xFF0000, 1000, false);
   ws2812fx.start();
+
+
+
+   for (int i = 0; i < 256; i += 8) {
+    uint32_t ogCol = ws2812fx.color_wheel(i);
+    CRGB myCol = ws2812fx.fadeColorScheme(i, 4);
+
+    Serial.print(ogCol, HEX);
+    Serial.print("\t");
+    Serial.print(myCol, HEX);
+    Serial.print("\t");
+    Serial.print(myCol.green, HEX);
+    Serial.print(", ");
+    Serial.print(myCol.red, HEX);
+    Serial.print(", ");
+    Serial.print(myCol.blue, HEX);
+    Serial.println();
+    
+   }
 }
 
 void loop() {
@@ -46,6 +67,15 @@ void loop() {
   if(now - last_change > TIMER_MS) {
     ws2812fx.setMode(0, (ws2812fx.getMode(0) + 1) % ws2812fx.getModeCount());
     ws2812fx.setMode(1, (ws2812fx.getMode(1) + 1) % ws2812fx.getModeCount());
+    ws2812fx.setMode(2, (ws2812fx.getMode(2) + 1) % ws2812fx.getModeCount());
     last_change = now;
   }
+
+  
+ 
+  
+
+
+
+  
 }
