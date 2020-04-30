@@ -22,13 +22,15 @@ unsigned long last_change = 0;
 unsigned long now = 0;
 
 
-TaskHandle_t blinkLED;
+TaskHandle_t wifiControl;
 
 void setup() {
 
   delay(1000);
   Serial.begin(115200);
   pinMode(27, OUTPUT);
+
+  wifiSetup();
 
   ws2812fx.addLeds<LED_PIN>(0, 30);
   ws2812fx.addLeds<13>(30, 330);
@@ -49,26 +51,31 @@ void setup() {
 
 
   xTaskCreatePinnedToCore(
-      blinkCode, /* Function to implement the task */
+      wifiControlLoop, /* Function to implement the task */
       "Blink", /* Name of the task */
       10000,  /* Stack size in words */
       NULL,  /* Task input parameter */
       0,  /* Priority of the task */
-      &blinkLED,  /* Task handle. */
+      &wifiControl,  /* Task handle. */
       0); /* Core where the task should run */
 }
 
 
-void blinkCode(void * pvParameters ) {
+void wifiControlLoop(void * pvParameters ) {
   
-  Serial.print("blink() running on core ");
+//  Serial.print("blink() running on core ");
+//  Serial.println(xPortGetCoreID());
+//  
+//  for (;;) {
+//    digitalWrite(27, HIGH);   // turn the LED on (HIGH is the voltage level)
+//    delay(1000);                       // wait for a second
+//    digitalWrite(27, LOW);    // turn the LED off by making the voltage LOW
+//    delay(1000);                       // wait for a second
+//  }
+  Serial.print("Wifi() running on core ");
   Serial.println(xPortGetCoreID());
-  
-  for (;;) {
-    digitalWrite(27, HIGH);   // turn the LED on (HIGH is the voltage level)
-    delay(1000);                       // wait for a second
-    digitalWrite(27, LOW);    // turn the LED off by making the voltage LOW
-    delay(1000);                       // wait for a second
+  for(;;) {
+    wifiLoop();
   }
 }
 
