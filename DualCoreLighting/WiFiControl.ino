@@ -1,10 +1,12 @@
 #include <WiFi.h>
 #include <ESPmDNS.h>
+#include <HttpRequest.h>
 
 const char* ssid = "StoffelNetwork-5";
 const char* password = "9529471171";
 
 WiFiServer server(80);
+HttpRequest httpReq;
 
 void wifiSetup() {
    // Connect to WiFi network
@@ -45,58 +47,92 @@ void wifiSetup() {
 }
 
 
+
 void wifiLoop() {
 
-    
+
    // Check if a client has connected
     WiFiClient client = server.available();
     if (!client) {
         return;
     }
+
+    
     Serial.println("");
     Serial.println("New client");
 
-    // Wait for data from client to become available
-    while(client.connected() && !client.available()){
-        delay(1);
+    String currentLine = "";                // make a String to hold incoming data from the client
+    while (client.connected()) {            // loop while the client's connected
+      if (client.available()) {             // if there's bytes to read from the client,
+        char c = client.read();             // read a byte, then
+       
+        //parse the received caracter
+        httpReq.parseRequest(c);
+        
+        Serial.write(c);
+        
+        //IF request has ended -> handle response
+        if (httpReq.endOfRequest()) {
+
+
+          
+            char name[HTTP_REQ_PARAM_NAME_LENGTH], value[HTTP_REQ_PARAM_VALUE_LENGTH];
+
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-Type: text/html");
+            client.println("Connnection: close");
+            client.println();
+            client.println("<!DOCTYPE HTML>");
+            client.println("<html>");
+            client.println("<body>");
+        
+            //access object properties
+            client.print("Method: ");
+            client.print(httpReq.method);
+            client.println("<br>");
+            client.print("Uri: ");
+            client.print(httpReq.uri);
+            client.println("<br>");
+            client.print("Version: ");
+            client.print(httpReq.version);
+            client.println("<br>");
+            client.print("paramCount: ");
+            client.print(httpReq.paramCount);
+            client.println("<br>");
+            //list received parameters GET and POST
+             client.println("Parameters:<br>");
+            for(int i=1;i<=httpReq.paramCount;i++){
+              httpReq.getParam(i,name,value);
+              client.print(name);
+              client.print("-");
+              client.print(value);
+              client.println("<br>");
+            }
+              /*
+             //find a particular parameter name
+              pos=httpReq.getParam("style",value);
+              if(pos>0){
+                client.print("<br>");
+                client.print("Found 'style'. Value: ");
+                client.print(value);
+                ledMode[index] = atoi(value) + 1;
+                clearStripBeforehand = true;
+                printLEDModes();
+                client.println("<br>");  
+              }*/
+            
+            client.println("</body>");
+            client.print("</html>");
+
+        }
+      }
     }
 
-    // Read the first line of HTTP request
-    String req = client.readStringUntil('\r');
-
-    // First line of HTTP request looks like "GET /path HTTP/1.1"
-    // Retrieve the "/path" part by finding the spaces
-    int addr_start = req.indexOf(' ');
-    int addr_end = req.indexOf(' ', addr_start + 1);
-    if (addr_start == -1 || addr_end == -1) {
-        Serial.print("Invalid request: ");
-        Serial.println(req);
-        return;
-    }
-    req = req.substring(addr_start + 1, addr_end);
-    Serial.print("Request: ");
-    Serial.println(req);
-
-    String s;
-    if (req == "/")
-    {
-        IPAddress ip = WiFi.localIP();
-        String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
-        s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from ESP32 at ";
-        s += ipStr;
-        s += "</html>\r\n\r\n";
-        Serial.println("Sending 200");
-    }
-    else
-    {
-        s = "HTTP/1.1 404 Not Found\r\n\r\n";
-        Serial.println("Sending 404");
-    }
-    client.print(s);
-
-    client.stop();
+    client.stop();    
     Serial.println("Done with client");
 
+
+    httpReq.resetRequest();
    
     digitalWrite(27, HIGH);   // turn the LED on (HIGH is the voltage level)
     delay(500);                       // wait for a second
