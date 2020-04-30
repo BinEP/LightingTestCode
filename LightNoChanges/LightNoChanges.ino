@@ -34,9 +34,9 @@ void setup() {
 //  ws2812fx.setMode(FX_MODE_RAINBOW_CYCLE);
 
   
-  ws2812fx.setSegment(0, 0, 15, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
-  ws2812fx.setSegment(1, 15, 30, FX_MODE_FLASH_SPARKLE, 0xFF0000, 1000, false);
-  ws2812fx.setSegment(2, 30, LED_COUNT, FX_MODE_WARM_CYCLE, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(0, 0, 30, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(1, 30, 180, FX_MODE_TWINKLE_NATURE, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(2, 180, LED_COUNT, FX_MODE_THEATER_CHASE_CANDY, 0xFF0000, 5000, false);
   ws2812fx.start();
 
 
