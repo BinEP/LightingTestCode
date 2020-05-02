@@ -17,12 +17,15 @@
 CRGB leds[LED_COUNT + 1];
 WS2812FX ws2812fx = WS2812FX(leds, LED_COUNT);
 
+volatile int sharedVar = 0;
+
 
 unsigned long last_change = 0;
 unsigned long now = 0;
 
 
 TaskHandle_t wifiControl;
+TaskHandle_t wifiSetupTask;
 
 void setup() {
 
@@ -30,7 +33,16 @@ void setup() {
   Serial.begin(115200);
   pinMode(27, OUTPUT);
 
-  wifiSetup();
+   xTaskCreatePinnedToCore(
+      wifiSetup, /* Function to implement the task */
+      "Setup", /* Name of the task */
+      10000,  /* Stack size in words */
+      NULL,  /* Task input parameter */
+      0,  /* Priority of the task */
+      &wifiSetupTask,  /* Task handle. */
+      0); /* Core where the task should run */
+
+//  wifiSetup();
 
   ws2812fx.addLeds<LED_PIN>(0, 30);
   ws2812fx.addLeds<13>(30, 330);

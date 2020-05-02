@@ -1,6 +1,6 @@
 #include <WS2812FX.h>
 
-#define LED_COUNT 330 
+#define LED_COUNT 390 
 #define LED_PIN 12
 
 #define TIMER_MS 5000
@@ -27,6 +27,7 @@ void setup() {
 
   ws2812fx.addLeds<LED_PIN>(0, 30);
   ws2812fx.addLeds<13>(30, 330);
+  ws2812fx.addLeds<25>(330, 390);
   ws2812fx.init();
   ws2812fx.setBrightness(255);
 //  ws2812fx.setSpeed(1000);
@@ -36,7 +37,9 @@ void setup() {
   
   ws2812fx.setSegment(0, 0, 30, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
   ws2812fx.setSegment(1, 30, 180, FX_MODE_TWINKLE_NATURE, 0xFF0000, 1000, false);
-  ws2812fx.setSegment(2, 180, LED_COUNT, FX_MODE_THEATER_CHASE_CANDY, 0xFF0000, 5000, false);
+  ws2812fx.setSegment(2, 180, 330, FX_MODE_THEATER_CHASE_CANDY, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(3, 330, 360, FX_MODE_BLINK_RAINBOW, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(4, 360, 390, FX_MODE_FIRE_FLICKER_INTENSE, 0xFF0000, 1000, false);
   ws2812fx.start();
 
 
@@ -68,6 +71,8 @@ void loop() {
     ws2812fx.setMode(0, (ws2812fx.getMode(0) + 1) % ws2812fx.getModeCount());
     ws2812fx.setMode(1, (ws2812fx.getMode(1) + 1) % ws2812fx.getModeCount());
     ws2812fx.setMode(2, (ws2812fx.getMode(2) + 1) % ws2812fx.getModeCount());
+    ws2812fx.setMode(3, (ws2812fx.getMode(3) + 1) % ws2812fx.getModeCount());
+    ws2812fx.setMode(4, (ws2812fx.getMode(4) + 1) % ws2812fx.getModeCount());
     last_change = now;
   }
 
