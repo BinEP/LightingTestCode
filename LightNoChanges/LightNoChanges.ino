@@ -39,7 +39,7 @@ void setup() {
   ws2812fx.setSegment(1, 30, 180, FX_MODE_TWINKLE_NATURE, 0xFF0000, 1000, false);
   ws2812fx.setSegment(2, 180, 330, FX_MODE_THEATER_CHASE_CANDY, 0xFF0000, 1000, false);
   ws2812fx.setSegment(3, 330, 360, FX_MODE_BLINK_RAINBOW, 0xFF0000, 1000, false);
-  ws2812fx.setSegment(4, 360, 390, FX_MODE_FIRE_FLICKER_INTENSE, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(4, 360, 390, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
   ws2812fx.start();
 
 
@@ -76,11 +76,4 @@ void loop() {
     last_change = now;
   }
 
-  
- 
-  
-
-
-
-  
 }
