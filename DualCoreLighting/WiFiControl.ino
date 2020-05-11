@@ -158,10 +158,6 @@ void serverHandleSetup() {
         request->send(200, "text/plain", "Hello, POST: " + message);
     });
 
-//    server.onNotFound([](AsyncWebServerRequest *request){
-//      request->send(404, "text/plain", "Not found");
-//    });
-
 
   
 }
@@ -170,90 +166,7 @@ void serverHandleSetup() {
 
 void wifiLoop() {
 
-/*
-   // Check if a client has connected
-    WiFiClient client = server.available();
-    if (!client) {
-        return;
-    }
 
-    
-    Serial.println("");
-    Serial.println("New client");
-
-    String currentLine = "";                // make a String to hold incoming data from the client
-    while (client.connected()) {            // loop while the client's connected
-      if (client.available()) {             // if there's bytes to read from the client,
-        char c = client.read();             // read a byte, then
-       
-        //parse the received caracter
-        httpReq.parseRequest(c);
-        
-        Serial.write(c);
-        
-        //IF request has ended -> handle response
-        if (httpReq.endOfRequest()) {
-
-
-          
-            char name[HTTP_REQ_PARAM_NAME_LENGTH], value[HTTP_REQ_PARAM_VALUE_LENGTH];
-
-            client.println("HTTP/1.1 200 OK");
-            client.println("Content-Type: text/html");
-            client.println("Connnection: close");
-            client.println();
-            client.println("<!DOCTYPE HTML>");
-            client.println("<html>");
-            client.println("<body>");
-        
-            //access object properties
-            client.print("Method: ");
-            client.print(httpReq.method);
-            client.println("<br>");
-            client.print("Uri: ");
-            client.print(httpReq.uri);
-            client.println("<br>");
-            client.print("Version: ");
-            client.print(httpReq.version);
-            client.println("<br>");
-            client.print("paramCount: ");
-            client.print(httpReq.paramCount);
-            client.println("<br>");
-            //list received parameters GET and POST
-             client.println("Parameters:<br>");
-            for(int i=1;i<=httpReq.paramCount;i++){
-              httpReq.getParam(i,name,value);
-              client.print(name);
-              client.print("-");
-              client.print(value);
-              client.println("<br>");
-            }
-              /*
-             //find a particular parameter name
-              pos=httpReq.getParam("style",value);
-              if(pos>0){
-                client.print("<br>");
-                client.print("Found 'style'. Value: ");
-                client.print(value);
-                ledMode[index] = atoi(value) + 1;
-                clearStripBeforehand = true;
-                printLEDModes();
-                client.println("<br>");  
-              }
-            
-            client.println("</body>");
-            client.print("</html>");
-
-        }
-      }
-    }
-
-    client.stop();    
-    Serial.println("Done with client");
-
-
-    httpReq.resetRequest();
-   */
     digitalWrite(27, HIGH);   // turn the LED on (HIGH is the voltage level)
     delay(500);                       // wait for a second
     digitalWrite(27, LOW);    // turn the LED off by making the voltage LOW
@@ -264,63 +177,3 @@ void wifiLoop() {
 
   
 }
-
-//void rootResponse(AsyncWebServerRequest *request) {
-//String response = "<html>";
-//
-//  response += "<head>"
-//"<link rel='apple-touch-icon' sizes='128x128' href='https://cdn4.iconfinder.com/data/icons/design-26/24/rgb_red_green_blue_color_monitoe_light_optical-512.png'>"
-//"<style>"
-//".button {"
-//"  background-color: #4CAF50;"
-//"  border: none;"
-//"  color: white;"
-//"  padding: 15px 32px;"
-//"  text-align: center;"
-//"  text-decoration: none;"
-//"  display: inline-block;"
-//"  font-size: 350%;"
-//"  margin: 4px 2px;"
-//"  cursor: pointer;"
-//"}"
-//"</style>"
-//"<script>"
-//"function sendEffect(link, elem) {"
-//" elem.style.background = 'blue';"
-//" const Http = new XMLHttpRequest();"
-//" const url=link;"
-//" Http.open('GET', url);"
-//" window.setTimeout('greenColor()',2000);"
-//" Http.send();"
-//"}"
-//"function greenColor() {"
-//"  var elements = document.getElementsByClassName('button');"
-//"  for(var i = 0; i < elements.length; i++){"
-//"    elements[i].style.backgroundColor = '#4CAF50';"
-//"  }"
-//"}"
-//"</script>"
-//
-//
-//"</head><body>";
-//
-//
-////  for (int i = 0; i < effectDataLength; i++) {
-////    response += "<button class='button' onclick='sendEffect(\"http://";
-////    response += host;
-////    response += ".local";
-////    response += "/case?case=";
-////    response += effectData[0][i];
-////    response += "\", this)'>";
-////    response += effectData[1][i];
-////    response += "</button>";
-////  }
-//  response += "Your IP is: ";
-//  response += (String) WiFi.localIP();
-//  response += "</body></html>";
-//  
-//
-//  request->send(200, "text/html", response);
-//  Serial.println(response);
-//  
-//}
