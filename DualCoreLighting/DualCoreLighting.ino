@@ -2,6 +2,8 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <ArduinoOTA.h>
+
 
 #include <ESPmDNS.h>
 
@@ -38,6 +40,7 @@ volatile bool changeRandom = false;
 
 void setup() {
 
+  otaSetup();
   delay(1000);
   Serial.begin(115200);
   pinMode(27, OUTPUT);
@@ -59,12 +62,13 @@ void setup() {
   ws2812fx.setSegment(2, 180, 330, FX_MODE_THEATER_CHASE_CANDY, 0xFF0000, 1000, false);
   ws2812fx.setSegment(3, 330, 352, FX_MODE_BLINK_RAINBOW, 0xFF0000, 1000, false);
   ws2812fx.setSegment(4, 352, 390, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
-  ws2812fx.start();
 
   Serial.print("setup() running on core ");
   Serial.println(xPortGetCoreID());
 
 
+
+  ws2812fx.start();
   xTaskCreatePinnedToCore(
       ledLoop, /* Function to implement the task */
       "LED Control", /* Name of the task */
@@ -73,9 +77,38 @@ void setup() {
       100,  /* Priority of the task Brady here: I want highest priority for timing sensitive elements*/
       &ledControl,  /* Task handle. */
       0); /* Core where the task should run */
+
+
+
+
+}
+
+void otaSetup() {
+  // init OTA
+  ArduinoOTA.onStart([]() {
+    Serial.println("OTA start");
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nOTA end");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.begin();
 }
 
 void loop() {
+
+  ArduinoOTA.handle();
+
   wifiLoop();
 
 }
