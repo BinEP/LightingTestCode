@@ -1,8 +1,4 @@
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
 
-#include <ESPmDNS.h>
 
 const char* ssid = "StoffelNetwork-5";
 const char* password = "9529471171";
@@ -12,9 +8,11 @@ AsyncWebServer server(80);
 
 
 const char* PARAM_MESSAGE = "message";
+void notFound(AsyncWebServerRequest *request) {
+    request->send(404, "text/plain", "Not found");
+}
 
-
-void wifiSetup(void * parameter) {
+void wifiSetup() {
    // Connect to WiFi network
     WiFi.begin(ssid, password);
     Serial.println("");
@@ -54,6 +52,8 @@ void wifiSetup(void * parameter) {
     MDNS.addService("http", "tcp", 80);
     sharedVar = 1;
 
+//    wifiSetupDone = true;
+    while(true);
 
     
 }
@@ -124,6 +124,10 @@ void serverHandleSetup() {
       
         request->send(200, "text/html", response);
         Serial.println(response);
+        Serial.print("response() running on core ");
+        Serial.println(xPortGetCoreID());
+
+        changeLEDs = true;
     });
 
     // Send a GET request to <IP>/get?message=<message>
@@ -137,6 +141,12 @@ void serverHandleSetup() {
         request->send(200, "text/plain", "Hello, GET: " + message);
     });
 
+     // Send a GET request to <IP>/get?message=<message>
+    server.on("/random", HTTP_GET, [] (AsyncWebServerRequest *request) {
+        changeRandom = true;
+        request->send(200, "text/plain", "Hello, Setting to Random");
+    });
+
     // Send a POST request to <IP>/post with a form field message set to <message>
     server.on("/post", HTTP_POST, [](AsyncWebServerRequest *request){
         String message;
@@ -148,9 +158,9 @@ void serverHandleSetup() {
         request->send(200, "text/plain", "Hello, POST: " + message);
     });
 
-    server.onNotFound([](AsyncWebServerRequest *request){
-      request->send(404, "text/plain", "Not found");
-    });
+//    server.onNotFound([](AsyncWebServerRequest *request){
+//      request->send(404, "text/plain", "Not found");
+//    });
 
 
   

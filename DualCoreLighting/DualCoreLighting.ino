@@ -1,6 +1,11 @@
 #include <WS2812FX.h>
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
-#define LED_COUNT 330 
+#include <ESPmDNS.h>
+
+#define LED_COUNT 390 
 #define LED_PIN 12
 
 #define TIMER_MS 5000
@@ -24,8 +29,12 @@ unsigned long last_change = 0;
 unsigned long now = 0;
 
 
-TaskHandle_t wifiControl;
-TaskHandle_t wifiSetupTask;
+TaskHandle_t ledControl;
+//TaskHandle_t wifiSetupTask;
+
+volatile bool changeLEDs = false;
+volatile bool changeRandom = false;
+
 
 void setup() {
 
@@ -33,19 +42,11 @@ void setup() {
   Serial.begin(115200);
   pinMode(27, OUTPUT);
 
-   xTaskCreatePinnedToCore(
-      wifiSetup, /* Function to implement the task */
-      "Setup", /* Name of the task */
-      10000,  /* Stack size in words */
-      NULL,  /* Task input parameter */
-      0,  /* Priority of the task */
-      &wifiSetupTask,  /* Task handle. */
-      0); /* Core where the task should run */
-
-//  wifiSetup();
+  wifiSetup();
 
   ws2812fx.addLeds<LED_PIN>(0, 30);
   ws2812fx.addLeds<13>(30, 330);
+  ws2812fx.addLeds<25>(330, 390);
   ws2812fx.init();
   ws2812fx.setBrightness(255);
 //  ws2812fx.setSpeed(1000);
@@ -55,7 +56,9 @@ void setup() {
   
   ws2812fx.setSegment(0, 0, 30, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
   ws2812fx.setSegment(1, 30, 180, FX_MODE_TWINKLE_NATURE, 0xFF0000, 1000, false);
-  ws2812fx.setSegment(2, 180, LED_COUNT, FX_MODE_THEATER_CHASE_CANDY, 0xFF0000, 5000, false);
+  ws2812fx.setSegment(2, 180, 330, FX_MODE_THEATER_CHASE_CANDY, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(3, 330, 352, FX_MODE_BLINK_RAINBOW, 0xFF0000, 1000, false);
+  ws2812fx.setSegment(4, 352, 390, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
   ws2812fx.start();
 
   Serial.print("setup() running on core ");
@@ -63,52 +66,16 @@ void setup() {
 
 
   xTaskCreatePinnedToCore(
-      wifiControlLoop, /* Function to implement the task */
-      "Blink", /* Name of the task */
-      10000,  /* Stack size in words */
+      ledLoop, /* Function to implement the task */
+      "LED Control", /* Name of the task */
+      3000,  /* Stack size in words */
       NULL,  /* Task input parameter */
-      0,  /* Priority of the task */
-      &wifiControl,  /* Task handle. */
+      100,  /* Priority of the task Brady here: I want highest priority for timing sensitive elements*/
+      &ledControl,  /* Task handle. */
       0); /* Core where the task should run */
 }
 
-
-void wifiControlLoop(void * pvParameters ) {
-  
-//  Serial.print("blink() running on core ");
-//  Serial.println(xPortGetCoreID());
-//  
-//  for (;;) {
-//    digitalWrite(27, HIGH);   // turn the LED on (HIGH is the voltage level)
-//    delay(1000);                       // wait for a second
-//    digitalWrite(27, LOW);    // turn the LED off by making the voltage LOW
-//    delay(1000);                       // wait for a second
-//  }
-  Serial.print("Wifi() running on core ");
-  Serial.println(xPortGetCoreID());
-  for(;;) {
-    wifiLoop();
-  }
-}
-
 void loop() {
-  now = millis();
+  wifiLoop();
 
-  ws2812fx.service();
-
-  if(now - last_change > TIMER_MS) {
-    ws2812fx.setMode(0, (ws2812fx.getMode(0) + 1) % ws2812fx.getModeCount());
-    ws2812fx.setMode(1, (ws2812fx.getMode(1) + 1) % ws2812fx.getModeCount());
-    ws2812fx.setMode(2, (ws2812fx.getMode(2) + 1) % ws2812fx.getModeCount());
-    last_change = now;
-  }
-
-//  Serial.print("loop() running on core ");
-//  Serial.println(xPortGetCoreID());
- 
-  
-
-
-
-  
 }
