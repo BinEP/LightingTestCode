@@ -10,6 +10,8 @@ const char* password = "9529471171";
 int switchState = 0;
 int prevSwitchState = switchState;
 
+int serverSetupIndex = 0;
+
 //WiFiServer server(80);
 AsyncWebServer server(80);
 AsyncWebServer servers[MAX_NUM_SCENES] = { server };
@@ -108,8 +110,11 @@ void restOfNetworkSetup() {
     MDNS.addService("http", "tcp", 80);
 
 
-
-    serverHandleSetup(server, 0);
+//    serverSetupIndex = 0;
+    serverHandleSetup(0);
+//    serverSetupIndex = 1;
+//    serverHandleSetup();
+    
 // Start TCP (HTTP) server
     server.begin();
     Serial.println("TCP server started");
@@ -145,6 +150,7 @@ void otaSetup() {
 
 
 void serverHandleSetup(int index) {
+
   AsyncWebServer server = servers[index];
 
   server.onNotFound([](AsyncWebServerRequest *request) {
@@ -231,12 +237,13 @@ void serverHandleSetup(int index) {
   });
 
   // receive the device info in JSON format and update the pattern data
-  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
+  server.on("/upload", HTTP_POST, [index](AsyncWebServerRequest *request) {
     String data = request->getParam("plain")->value();
     Serial.println(data);
 
-    bool isParseOk = json2patterns(data);
+    bool isParseOk = json2patterns(data, index);
 
+    int numPatterns = scenes[index].numPatterns;
     if (isParseOk && numPatterns > 0) {
       ws2812fx.stop();
 //      ws2812fx.clear();

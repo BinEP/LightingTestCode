@@ -14,10 +14,18 @@ typedef struct Pattern { // 208 bytes/pattern
   WS2812FX::segment segments[MAX_NUM_SEGMENTS];
 } pattern;
 
+typedef struct Scene { // 208 bytes/pattern
+  int numPatterns = 1;
+  Pattern patterns[MAX_NUM_PATTERNS] = { DEFAULT_PATTERN };
+} board_scene;
+
 // setup a default patterns array
 //Remove this, replace with scenes. Set patterns var in each function
-Pattern patterns[MAX_NUM_PATTERNS] = { DEFAULT_PATTERN };
-int numPatterns = 1;
+//Pattern patterns[MAX_NUM_PATTERNS] = { DEFAULT_PATTERN };
+Scene scenes[MAX_NUM_SCENES];
+int currentScene = 0;
+int numScenes = 1;
+
 int currentPattern = 0;
 unsigned long lastTime = 0;
 
@@ -65,6 +73,9 @@ void ledLoop() {
   ws2812fx.service();
 
   // if it's time to change pattern, do it now
+  Pattern* patterns = scenes[currentScene].patterns;
+  int numPatterns = scenes[currentScene].numPatterns;
+
   unsigned long now = millis();
   if (lastTime == 0 || (now - lastTime > patterns[currentPattern].duration * 1000)) {
 //    ws2812fx.clear();

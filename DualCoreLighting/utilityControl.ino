@@ -11,8 +11,8 @@ int modeName2Index(const char* name) {
 void saveToEEPROM() {
   Serial.println("saving to Preferences");
   
-  ledPreferences.putInt("numPatterns", numPatterns);
-  ledPreferences.putBytes("patterns", patterns, sizeof(patterns));
+  ledPreferences.putInt("numScenes", numScenes);
+  ledPreferences.putBytes("scenes", scenes, sizeof(scenes));
 //  EEPROM.put(sizeof(int) * 0, (int)EEPROM_MAGIC_NUMBER);
 //  EEPROM.put(sizeof(int) * 1, (int)ws2812fx.getPin());
 //  EEPROM.put(sizeof(int) * 2, (int)ws2812fx.getLength());
@@ -23,10 +23,10 @@ void saveToEEPROM() {
 
 void restoreFromEEPROM() {
 
-    numPatterns = ledPreferences.getInt("numPatterns", 1);
-    size_t numBytes = ledPreferences.getBytesLength("patterns");
+    numScenes = ledPreferences.getInt("numScenes", 1);
+    size_t numBytes = ledPreferences.getBytesLength("scenes");
     if (numBytes != 0) {
-       ledPreferences.getBytes("patterns", patterns, sizeof(patterns));
+       ledPreferences.getBytes("scenes", scenes, sizeof(scenes));
     }
     
 }
@@ -35,7 +35,10 @@ void restoreFromEEPROM() {
 
 #if ARDUINOJSON_VERSION_MAJOR == 5
 //#pragma message("Compiling for ArduinoJson v5")
-bool json2patterns(String &json) {
+bool json2patterns(String &json, int index) {
+
+  Pattern* patterns = scenes[index].patterns;
+  int numPatterns = scenes[index].numPatterns;
   DynamicJsonBuffer jsonBuffer(2000);
   JsonObject& deviceJson = jsonBuffer.parseObject(json);
   if (deviceJson.success()) {
@@ -114,12 +117,15 @@ bool json2patterns(String &json) {
 
 #if ARDUINOJSON_VERSION_MAJOR == 6
 //#pragma message("Compiling for ArduinoJson v6")
-bool json2patterns(String &json) {
+bool json2patterns(String &json, int index) {
   // in ArduinoJson v6 a DynamicJsonDocument does not expand as needed
   // like it did in ArduinoJson v5. So rather then try to compute the
   // optimum heap size, we'll just allocated a bunch of space on the
   // heap and hope it's enough.
   int freeHeap = ESP.getFreeHeap();
+  Pattern* patterns = scenes[currentScene].patterns;
+  int numPatterns = scenes[index].numPatterns;
+
   DynamicJsonDocument doc(freeHeap - 3096); // allocate all of the available heap except 3kB
   DeserializationError error = deserializeJson(doc, json);
   if (!error) {
