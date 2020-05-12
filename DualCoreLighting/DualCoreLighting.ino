@@ -3,9 +3,13 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoOTA.h>
+#include <ArduinoJson.h>
+#include <Preferences.h>
 
 
 #include <ESPmDNS.h>
+
+#define VERSION "2.1.0"
 
 #define LED_COUNT 390 
 #define LED_PIN 12
@@ -24,12 +28,6 @@
 CRGB leds[LED_COUNT + 1];
 WS2812FX ws2812fx = WS2812FX(leds, LED_COUNT);
 
-volatile int sharedVar = 0;
-
-
-unsigned long last_change = 0;
-unsigned long now = 0;
-
 
 TaskHandle_t ledControl;
 //TaskHandle_t wifiSetupTask;
@@ -45,6 +43,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(27, OUTPUT);
 
+  ws2812fx.start();
   wifiSetup();
 
   ws2812fx.addLeds<LED_PIN>(0, 30);
@@ -68,7 +67,7 @@ void setup() {
 
 
 
-  ws2812fx.start();
+  
   xTaskCreatePinnedToCore(
       ledLoop, /* Function to implement the task */
       "LED Control", /* Name of the task */
