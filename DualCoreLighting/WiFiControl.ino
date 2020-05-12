@@ -1,7 +1,7 @@
 
 #define SSID_CONNECT_MAX_MILLIS       10000
 #define NETWORK_MODE_SWITCH_PIN       18
-
+#define BASE_SERVER_PORT              80
 
 
 
@@ -10,11 +10,10 @@ const char* password = "9529471171";
 int switchState = 0;
 int prevSwitchState = switchState;
 
-int serverSetupIndex = 0;
-
 //WiFiServer server(80);
-AsyncWebServer server(80);
-AsyncWebServer servers[MAX_NUM_SCENES] = { server };
+//AsyncWebServer server(80);
+int numServers = 1;
+AsyncWebServer servers[MAX_NUM_SCENES] = {AsyncWebServer(80)};
 
 
 void (*customAuxFunc[])(void) { // define custom auxiliary functions here
@@ -110,15 +109,16 @@ void restOfNetworkSetup() {
     MDNS.addService("http", "tcp", 80);
 
 
-//    serverSetupIndex = 0;
-    serverHandleSetup(0);
-//    serverSetupIndex = 1;
-//    serverHandleSetup();
-    
-// Start TCP (HTTP) server
-    server.begin();
-    Serial.println("TCP server started");
+    for (int i = 0; i < MAX_NUM_SCENES; i++) {
+        serverHandleSetup(i);
+        servers[i].begin();
+        Serial.print("TCP server started on port ");
+        Serial.println(MAX_NUM_SCENES + i);
 
+    }
+
+// Start TCP (HTTP) server
+    
 
 
   
@@ -151,6 +151,7 @@ void otaSetup() {
 
 void serverHandleSetup(int index) {
 
+  servers[index] = AsyncWebServer(BASE_SERVER_PORT + index);
   AsyncWebServer server = servers[index];
 
   server.onNotFound([](AsyncWebServerRequest *request) {
