@@ -245,6 +245,7 @@ void serverHandleSetup(int index) {
 
     int numPatterns = scenes[index].numPatterns;
     if (isParseOk && numPatterns > 0) {
+      numScenes = max(numScenes, index + 1);
       ws2812fx.stop();
 //      ws2812fx.clear();
       ws2812fx.resetSegments();
