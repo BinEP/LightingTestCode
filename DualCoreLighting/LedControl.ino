@@ -2,9 +2,11 @@
 //On it's own core. This core should only be LEDs because timing sensitive
 //Everything else can happen elsewhere
 #define MAX_NUM_PATTERNS 10
+#define MAX_NUM_SCENES   1
 //                       duration, brightness, numSegments, [ { first, last, speed, mode, options, colors[] } ]
 #define DEFAULT_PATTERN {30, 150, 1, { {0, LED_COUNT-1, LED_COUNT*20, FX_MODE_RAINBOW_CYCLE, NO_OPTIONS, {RED,  BLACK, BLACK}} }}
 
+//TODO add scenes
 typedef struct Pattern { // 208 bytes/pattern
   int duration;
   uint8_t brightness;
@@ -13,6 +15,7 @@ typedef struct Pattern { // 208 bytes/pattern
 } pattern;
 
 // setup a default patterns array
+//Remove this, replace with scenes. Set patterns var in each function
 Pattern patterns[MAX_NUM_PATTERNS] = { DEFAULT_PATTERN };
 int numPatterns = 1;
 int currentPattern = 0;

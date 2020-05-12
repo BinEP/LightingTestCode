@@ -12,6 +12,8 @@ int prevSwitchState = switchState;
 
 //WiFiServer server(80);
 AsyncWebServer server(80);
+AsyncWebServer servers[MAX_NUM_SCENES] = { server };
+
 
 void (*customAuxFunc[])(void) { // define custom auxiliary functions here
   [] { Serial.println("running customAuxFunc[0]"); },
@@ -107,7 +109,7 @@ void restOfNetworkSetup() {
 
 
 
-    serverHandleSetup();
+    serverHandleSetup(server, 0);
 // Start TCP (HTTP) server
     server.begin();
     Serial.println("TCP server started");
@@ -142,7 +144,8 @@ void otaSetup() {
 
 
 
-void serverHandleSetup() {
+void serverHandleSetup(int index) {
+  AsyncWebServer server = servers[index];
 
   server.onNotFound([](AsyncWebServerRequest *request) {
 
