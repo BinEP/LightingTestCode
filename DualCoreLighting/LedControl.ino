@@ -2,8 +2,8 @@
 //On it's own core. This core should only be LEDs because timing sensitive
 //Everything else can happen elsewhere
 #define MAX_NUM_PATTERNS 10
-
-#define DEFAULT_PATTERN {30, 64, 1, { {0, LED_COUNT-1, LED_COUNT*20, FX_MODE_STATIC, NO_OPTIONS, {RED,  BLACK, BLACK}} }}
+//                       duration, brightness, numSegments, [ { first, last, speed, mode, options, colors[] } ]
+#define DEFAULT_PATTERN {30, 150, 1, { {0, LED_COUNT-1, LED_COUNT*20, FX_MODE_RAINBOW_CYCLE, NO_OPTIONS, {RED,  BLACK, BLACK}} }}
 
 typedef struct Pattern { // 208 bytes/pattern
   int duration;
@@ -20,7 +20,44 @@ unsigned long lastTime = 0;
 
 
 
-void ledLoop(void * parameter) {
+void ledLoopParent(void * parameter) {
+
+  ws2812fx.addLeds<LED_PIN>(0, 30);
+  ws2812fx.addLeds<13>(30, 330);
+  ws2812fx.addLeds<25>(330, 390);
+  ws2812fx.init();
+  ws2812fx.setBrightness(150);
+//  ws2812fx.setSpeed(1000);
+//  ws2812fx.setColor(0x007BFF);
+//  ws2812fx.setMode(FX_MODE_RAINBOW_CYCLE);
+
+  
+//  ws2812fx.setSegment(0, 0, 30, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
+//  ws2812fx.setSegment(1, 30, 180, FX_MODE_TWINKLE_NATURE, 0xFF0000, 1000, false);
+//  ws2812fx.setSegment(2, 180, 330, FX_MODE_THEATER_CHASE_CANDY, 0xFF0000, 1000, false);
+//  ws2812fx.setSegment(3, 330, 352, FX_MODE_BLINK_RAINBOW, 0xFF0000, 1000, false);
+//  ws2812fx.setSegment(4, 352, 390, FX_MODE_RAINBOW_CYCLE, 0xFF0000, 1000, false);
+
+
+   ledPreferences.begin("prefs", false);
+//    Get previous settings and load
+     
+     
+     // if not rebooting due to catastrophic error, restore pattern data from eeprom
+//    struct  rst_info  *rstInfo = system_get_rst_info();
+    //Serial.print("rstInfo->reason:"); Serial.println(rstInfo->reason);
+//    if (rstInfo->reason !=  REASON_EXCEPTION_RST) { // not reason 2
+      restoreFromEEPROM();
+//    }
+
+
+  ws2812fx.start();
+  while(true) {
+    ledLoop();
+  }
+}
+
+void ledLoop() {
 
   ws2812fx.service();
 
@@ -38,48 +75,4 @@ void ledLoop(void * parameter) {
     }
     lastTime = now;
   }
-
-//  if (changeLEDs) {
-//      long effect = random(0, 105);
-//      ws2812fx.setMode(0, effect);
-//      ws2812fx.setMode(1, effect);
-//      ws2812fx.setMode(2, effect);
-//      ws2812fx.setMode(3, effect);
-//      ws2812fx.setMode(4, effect);
-//    
-//      last_change = now;
-//      changeLEDs = false;
-//  } else if (changeRandom) {
-//      long effect = random(0, 105);
-//      ws2812fx.setMode(0, effect);
-//      effect = random(0, 105);
-//      ws2812fx.setMode(1, effect);
-//      effect = random(0, 105);
-//      ws2812fx.setMode(2, effect);
-//      effect = random(0, 105);
-//      ws2812fx.setMode(3, effect);
-//      effect = random(0, 105);
-//      ws2812fx.setMode(4, effect);
-//      changeRandom = false;
-//  } else {
-//    if(now - last_change > TIMER_MS) {
-//
-//      ws2812fx.setMode(0, (ws2812fx.getMode(0) + 1) % ws2812fx.getModeCount());
-//      ws2812fx.setMode(1, (ws2812fx.getMode(1) + 1) % ws2812fx.getModeCount());
-//      ws2812fx.setMode(2, (ws2812fx.getMode(2) + 1) % ws2812fx.getModeCount());
-//      ws2812fx.setMode(3, (ws2812fx.getMode(3) + 1) % ws2812fx.getModeCount());
-//      ws2812fx.setMode(4, (ws2812fx.getMode(4) + 1) % ws2812fx.getModeCount());
-//    }
-//    
-//    last_change = now;
-//  }
-
-//  Serial.print("loop() running on core ");
-//  Serial.println(xPortGetCoreID());
- 
-  
-
-
-
-  
 }

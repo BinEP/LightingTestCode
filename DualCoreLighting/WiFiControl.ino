@@ -1,11 +1,17 @@
 
+#define SSID_CONNECT_MAX_MILLIS       10000
+#define NETWORK_MODE_SWITCH_PIN       18
+
+
+
 
 const char* ssid = "StoffelNetwork-5";
 const char* password = "9529471171";
+int switchState = 0;
+int prevSwitchState = switchState;
 
 //WiFiServer server(80);
 AsyncWebServer server(80);
-Preferences ledPreferences;
 
 void (*customAuxFunc[])(void) { // define custom auxiliary functions here
   [] { Serial.println("running customAuxFunc[0]"); },
@@ -13,23 +19,75 @@ void (*customAuxFunc[])(void) { // define custom auxiliary functions here
   [] { Serial.println("running customAuxFunc[2]"); }
 };
 
+
 void wifiSetup() {
-   // Connect to WiFi network
-    WiFi.begin(ssid, password);
-    Serial.println("");
 
-    // Wait for connection
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
+    otaSetup();
+//    attachInterrupt(digitalPinToInterrupt(NETWORK_MODE_SWITCH_PIN), CHANGE);
+
+    pinMode(NETWORK_MODE_SWITCH_PIN, INPUT);
+    switchState = digitalRead(NETWORK_MODE_SWITCH_PIN);
+    if (switchState == HIGH) {
+      connectToNetworkSetup();
+    } else {
+      apSetup();
     }
-    Serial.println("");
-    Serial.print("Connected to ");
-    Serial.println(ssid);
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
 
-    // Set up mDNS responder:
+    restOfNetworkSetup();
+   
+
+   
+    
+}
+
+
+void connectToNetworkSetup() {
+
+  WiFi.mode(WIFI_MODE_STA);
+  WiFi.enableAP(false);
+  WiFi.softAPdisconnect();
+  WiFi.softAPdisconnect(false);
+
+  
+  // Connect to WiFi network
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+
+      switchState = digitalRead(NETWORK_MODE_SWITCH_PIN);
+      if (switchState != prevSwitchState) {
+        return;
+      }
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  
+}
+
+void apSetup() {
+      // Connect to Wi-Fi network with SSID and password
+        Serial.print("Setting AP (Access Point)…");
+        // Remove the password parameter, if you want the AP (Access Point) to be open
+        
+//        WiFi.softAP("PandaLights", "somepass");
+        WiFi.softAP("PandaLights");
+      
+        IPAddress IP = WiFi.softAPIP();
+        Serial.print("AP IP address: ");
+        Serial.println(IP);
+}
+
+void restOfNetworkSetup() {
+
+   // Set up mDNS responder:
     // - first argument is the domain name, in this example
     //   the fully-qualified domain name is "esp8266.local"
     // - second argument is the IP address to advertise
@@ -40,28 +98,45 @@ void wifiSetup() {
             delay(1000);
         }
     }
+
+    
+    
     Serial.println("mDNS responder started");
     // Add service to MDNS-SD
     MDNS.addService("http", "tcp", 80);
 
 
 
-    ledPreferences.begin("prefs", false);
-
-     // if not rebooting due to catastrophic error, restore pattern data from eeprom
-//    struct  rst_info  *rstInfo = system_get_rst_info();
-    //Serial.print("rstInfo->reason:"); Serial.println(rstInfo->reason);
-//    if (rstInfo->reason !=  REASON_EXCEPTION_RST) { // not reason 2
-      restoreFromEEPROM();
-//    }
-    
     serverHandleSetup();
 // Start TCP (HTTP) server
     server.begin();
     Serial.println("TCP server started");
 
 
-    
+
+  
+}
+
+void otaSetup() {
+  // init OTA
+  ArduinoOTA.onStart([]() {
+    Serial.println("OTA start");
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nOTA end");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+  });
+  ArduinoOTA.begin();
 }
 
 
@@ -186,7 +261,16 @@ void serverHandleSetup() {
 
 void wifiLoop() {
 
-
+//    Watch for turning on AP mode
+    switchState = digitalRead(NETWORK_MODE_SWITCH_PIN);
+    if (switchState != prevSwitchState) {
+      if (switchState == HIGH) {
+        connectToNetworkSetup();
+      } else {
+        apSetup();
+      }
+      
+    }
     digitalWrite(27, HIGH);   // turn the LED on (HIGH is the voltage level)
     delay(500);                       // wait for a second
     digitalWrite(27, LOW);    // turn the LED off by making the voltage LOW
